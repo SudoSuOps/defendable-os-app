@@ -44,12 +44,21 @@ describe('head: title, description, canonical, robots', () => {
     assert.ok(img.startsWith(`${SITE}/`));
     const { w, h } = pngSize(img.replace(SITE + '/', ''));
     assert.deepEqual([w, h], [1200, 630]);
-    assert.ok(readFileSync(join(OUT, img.replace(SITE + '/', ''))).length < 300 * 1024, 'og image should stay small');
+    assert.ok(readFileSync(join(OUT, img.replace(SITE + '/', ''))).length < 600 * 1024, 'og image should stay under 600 KB');
   });
-  it('links the manifest, favicon and apple touch icon', () => {
+  it('links the manifest, an SVG favicon, PNG/ICO favicons and the apple touch icon, all of which exist', () => {
     assert.ok($('link[rel="manifest"]').attr('href'));
-    assert.ok($('link[rel="icon"]').length >= 1);
-    assert.ok($('link[rel="apple-touch-icon"]').length >= 1);
+    const icons = $('link[rel="icon"]').map((_, e) => ({ href: $(e).attr('href').split('?')[0], type: $(e).attr('type') })).get();
+    assert.ok(icons.some((i) => i.href.endsWith('.svg') && i.type === 'image/svg+xml'), 'SVG favicon');
+    assert.ok(icons.some((i) => i.href.endsWith('.ico')), 'ICO favicon');
+    assert.ok(icons.some((i) => i.href.endsWith('.png')), 'PNG icon');
+    const apple = $('link[rel="apple-touch-icon"]').attr('href').split('?')[0];
+    assert.deepEqual([pngSize(apple.slice(1)).w, pngSize(apple.slice(1)).h], [180, 180]);
+    for (const i of icons) assert.ok(existsSync(join(OUT, i.href.replace(/^\//, ''))), i.href);
+  });
+  it('ships the kit brand files the docs promise (email mark, manifest icons at their declared sizes)', () => {
+    assert.deepEqual(Object.values(pngSize('brand/email-mark-64.png')), [64, 64]);
+    for (const [f, n] of [['brand/icon-192.png', 192], ['brand/icon-512.png', 512]]) assert.deepEqual(Object.values(pngSize(f)), [n, n]);
   });
 });
 

@@ -13,7 +13,7 @@ export const SITE = {
   country: 'US',
   x: 'https://x.com/defendableos',
   xHandle: '@defendableos',
-  ogImage: '/brand/og-image.png',
+  ogImage: '/brand/og-default.png',
   logo: '/brand/defendable-shield.png',
   themeColor: '#07090B',
   /** Bump when the page content genuinely changes: it feeds sitemap lastmod, llms-full.txt and security.txt expectations. */

@@ -30,14 +30,14 @@ export const metadata: Metadata = {
     siteName: SITE.name,
     locale: 'en_US',
     type: 'website',
-    images: [{ url: SITE.ogImage, width: 1200, height: 630, alt: 'Defendable shield and wordmark' }],
+    images: [{ url: SITE.ogImage, width: 1200, height: 630, alt: 'DefendableOS: AI makes the claim. Defendable demands the proof.' }],
   },
   twitter: {
     card: 'summary_large_image',
     site: SITE.xHandle,
     title: `${SITE.name} — ${SITE.tagline}`,
     description: SITE.description,
-    images: [{ url: SITE.ogImage, alt: 'Defendable shield and wordmark' }],
+    images: [{ url: SITE.ogImage, alt: 'DefendableOS: AI makes the claim. Defendable demands the proof.' }],
   },
   formatDetection: { email: false, address: false, telephone: false },
 };
