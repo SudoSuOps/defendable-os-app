@@ -48,7 +48,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${space.variable} ${inter.variable} ${plex.variable}`}>
       <body>
+        {/* Cloudflare's Email Address Obfuscation mistakes strings like dv-validator@1.4.0 for emails and rewrites visible text.
+            These markers exclude the page from it (raw comments, because React cannot render comment nodes). */}
+        <span hidden dangerouslySetInnerHTML={{ __html: '<!--email_off-->' }} />
         <Providers>{children}</Providers>
+        <span hidden dangerouslySetInnerHTML={{ __html: '<!--/email_off-->' }} />
       </body>
     </html>
   );

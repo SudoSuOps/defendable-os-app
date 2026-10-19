@@ -116,6 +116,21 @@ describe('structured data (JSON-LD)', () => {
   });
 });
 
+describe('Cloudflare email obfuscation guard', () => {
+  it('wraps the whole page in email_off markers so version strings like dv-validator@1.4.0 are never rewritten', () => {
+    const raw = read('index.html');
+    const open = raw.indexOf('<!--email_off-->');
+    const close = raw.indexOf('<!--/email_off-->');
+    assert.ok(open > 0 && close > open, 'markers missing or out of order');
+    assert.ok(open < raw.indexOf('<main'), 'opening marker must precede <main>');
+    assert.ok(close > raw.indexOf('</footer>'), 'closing marker must follow the footer');
+    for (const s of ['dv-validator@1.4.0', 'lease-record@2.1', 'build@defendableos.com']) {
+      const i = raw.indexOf(s);
+      assert.ok(i > open && i < close, `${s} falls outside the protected region`);
+    }
+  });
+});
+
 describe('crawl files', () => {
   it('robots.txt allows everything, names the AI crawlers, and points to the sitemap', () => {
     const r = read('robots.txt');
