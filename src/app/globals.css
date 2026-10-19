@@ -1,0 +1,73 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-canvas: #07090b;
+  --color-alt: #0a0d10;
+  --color-surface: #11151a;
+  --color-elevated: #181e24;
+  --color-inset: #0d1013;
+  --color-inset2: #0b0e11;
+  --color-ti: #949ea9;
+  --color-gold: #d6aa54;
+  --color-gold2: #f0c878;
+  --color-fg: #f3f5f7;
+  --color-fg2: #9aa5b1;
+  --color-mute: #8493a5;
+  --color-hair: #29313b;
+  --color-div: #1d232a;
+  --color-div2: #3a4350;
+  --color-dash: #4a5562;
+  --color-pass: #46c991;
+  --color-fail: #f16c6c;
+  --color-review: #e5b65b;
+
+  --font-display: var(--font-space), system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-plex), ui-monospace, monospace;
+
+  --ease-def: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background: #07090b;
+  }
+  body {
+    margin: 0;
+    background: #07090b;
+    color: #f3f5f7;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  a {
+    color: #f0c878;
+    text-decoration: none;
+  }
+  a:hover {
+    color: #f3f5f7;
+  }
+  :focus-visible {
+    outline: 2px solid #f0c878;
+    outline-offset: 3px;
+  }
+  button {
+    font: inherit;
+  }
+  ::selection {
+    background: #d6aa54;
+    color: #07090b;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+}
