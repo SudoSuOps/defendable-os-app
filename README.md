@@ -91,12 +91,14 @@ These affect search and AI visibility and cannot be set from the code:
 
 ## Measured, not claimed
 
-Lighthouse 12.8 against the static export, headless Brave on a small local machine, two runs per profile (2026-10-19). These are lab numbers from one machine, not field data.
+Lighthouse 12.8 against **production** (`https://defendableos.com`, over the real Cloudflare edge) from a small local machine, headless Brave, warm edge cache, three runs per profile on 2026-10-19. Lab numbers from one machine, not field data. (A run taken seconds after a deploy hit a cold edge cache and scored far lower, so measure after the cache warms.)
 
 | Profile | Performance | Accessibility | Best practices | SEO | LCP | TBT | CLS |
 |---|---|---|---|---|---|---|---|
-| Desktop | 85, 93 | 100 | 100 | 100 | 1.1 to 1.2 s | 160 to 280 ms | 0 |
-| Mobile (simulated slow 4G, 4x CPU) | 48, 52 | 100 | 100 | 100 | 5.9 to 6.0 s | 1.5 to 1.8 s | 0 |
+| Desktop | 83, 85, 87 | 100 | 100 | 100 | 0.7 to 1.0 s | 280 to 360 ms | 0 |
+| Mobile (simulated slow 4G, 4x CPU) | 45, 46, 68 | 100 | 100 | 100 | 2.7 to 6.1 s | 1.7 s | 0 |
+
+Mobile varies a lot run to run (FCP 1.7 s in the best run, about 3 s in the others). Accessibility, best practices and SEO were 100 on every run. The live site logs no console messages and no CSP violations.
 
 **Mobile performance is the known weak spot.** The cost is main-thread JavaScript, not images or layout: the page is only 818 DOM nodes, but React hydration is one 1.3 s task under Lighthouse's 4x CPU slowdown, plus about 330 ms for the 3D scene. The test host benchmarks well above Lighthouse's reference (index 1915), so this is not a slow-machine artifact.
 
