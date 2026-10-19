@@ -7,6 +7,9 @@ import { CONTACT_EMAIL, DIAL_OPTIONS } from '@/lib/demo/content';
 import { cx } from '@/components/ui';
 import { useDial } from '@/state/providers';
 
+// The strict CSP forbids eval. Zod's JIT probes for it with `new Function`, which logs a violation, so run it in its non-JIT mode.
+z.config({ jitless: true });
+
 const Request = z.object({
   name: z.string().trim().min(1),
   email: z.string().trim().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/),

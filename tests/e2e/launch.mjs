@@ -49,6 +49,10 @@ export async function serve(root = 'out') {
 export async function launch({ width = 1440, height = 900, reducedMotion = 'no-preference', acceptDownloads = true } = {}) {
   const browser = await chromium.launch({ executablePath: BROWSER, headless: true, args: ['--no-sandbox', '--disable-gpu'] });
   const ctx = await browser.newContext({ viewport: { width, height }, reducedMotion, acceptDownloads });
+  await ctx.addInitScript(() => {
+    window.__csp = [];
+    document.addEventListener('securitypolicyviolation', (e) => window.__csp.push(`${e.violatedDirective} blocked ${e.blockedURI}`));
+  });
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));

@@ -373,3 +373,15 @@ describe('Content-Security-Policy is enforced, not just declared', () => {
     }
   });
 });
+
+describe('whole session', () => {
+  it('produced no console errors and no CSP violations, including after the lazy modal and 3D chunks loaded', async () => {
+    await env.page.waitForTimeout(6500); // let the idle-time warm-up of the modal chunk run
+    assert.deepEqual(await env.page.evaluate(() => window.__csp), []);
+    assert.deepEqual(env.errors, []);
+  });
+  it('sends no deprecated Permissions-Policy features', async () => {
+    const r = await fetch(srv.base + '/');
+    assert.doesNotMatch(r.headers.get('permissions-policy'), /interest-cohort/);
+  });
+});
