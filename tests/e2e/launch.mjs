@@ -6,17 +6,36 @@ import { extname, join, normalize } from 'node:path';
 /** Uses a locally installed Chromium-family browser; set DEFENDABLE_BROWSER to override. */
 export const BROWSER = process.env.DEFENDABLE_BROWSER || '/snap/bin/brave';
 
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.txt': 'text/plain', '.json': 'application/json', '.woff2': 'font/woff2', '.svg': 'image/svg+xml' };
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.txt': 'text/plain', '.json': 'application/json', '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json', '.xml': 'application/xml', '.ico': 'image/x-icon' };
 
-/** Serves ./out (the static export) on a random loopback port. */
+/** Parses a Cloudflare Pages `_headers` file into [pattern, headers] rules. */
+export function parseHeaders(text) {
+  const rules = [];
+  let cur = null;
+  for (const raw of text.split('\n')) {
+    if (!raw.trim()) continue;
+    if (!/^\s/.test(raw)) rules.push((cur = [raw.trim(), {}]));
+    else if (cur) {
+      const i = raw.indexOf(':');
+      cur[1][raw.slice(0, i).trim()] = raw.slice(i + 1).trim();
+    }
+  }
+  return rules;
+}
+const matches = (pattern, path) => new RegExp('^' + pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$').test(path);
+
+/** Serves ./out (the static export) on a random loopback port, applying out/_headers the way Cloudflare Pages does. */
 export async function serve(root = 'out') {
+  const rules = parseHeaders(await readFile(join(root, '_headers'), 'utf8').catch(() => ''));
   const server = createServer(async (req, res) => {
     try {
       let p = normalize(decodeURIComponent(new URL(req.url, 'http://x').pathname)).replace(/^(\.\.[/\\])+/, '');
       let file = join(root, p);
       if ((await stat(file).catch(() => null))?.isDirectory()) file = join(file, 'index.html');
       const body = await readFile(file);
-      res.writeHead(200, { 'content-type': MIME[extname(file)] ?? 'application/octet-stream' });
+      const headers = { 'content-type': MIME[extname(file)] ?? 'application/octet-stream' };
+      for (const [pat, h] of rules) if (matches(pat, p)) for (const [k, v] of Object.entries(h)) headers[k.toLowerCase()] = v;
+      res.writeHead(200, headers);
       res.end(body);
     } catch {
       res.writeHead(404).end('not found');

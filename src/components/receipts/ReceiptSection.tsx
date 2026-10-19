@@ -1,7 +1,8 @@
 'use client';
 
 import { RECEIPT_NOTES } from '@/lib/demo/content';
-import { DemoTag, Eyebrow, KV, Section, Button, type Tone } from '@/components/ui';
+import { Button, DemoTag, Eyebrow, KV, Section, type Tone } from '@/components/ui';
+import { CopyButton } from '@/components/ui/CopyButton';
 import { useDemo } from '@/state/providers';
 
 export function ReceiptSection({ demoLabels = true }: { demoLabels?: boolean }) {
@@ -51,7 +52,10 @@ export function ReceiptSection({ demoLabels = true }: { demoLabels?: boolean }) 
             ))}
           </dl>
           <div className="bg-inset px-5 py-4">
-            <div className="font-mono text-[11px] tracking-[0.12em] text-mute">RECEIPT_HASH · SHA-256</div>
+            <div className="flex items-center justify-between gap-3">
+              <div className="font-mono text-[11px] tracking-[0.12em] text-mute">RECEIPT_HASH · SHA-256</div>
+              {run && <CopyButton text={run.hash} label="Copy hash" />}
+            </div>
             <div className="mt-1.5 break-all font-mono text-[13px] text-gold2">{run?.hash ?? '…'}</div>
           </div>
         </div>

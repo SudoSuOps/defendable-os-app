@@ -26,6 +26,9 @@ export function FooterNav() {
               {l.full}
             </a>
           ))}
+          <a href="#faq" className="text-[14px] text-fg2 hover:text-fg">
+            Questions
+          </a>
         </nav>
         <div className="grid content-start gap-2">
           <div className="font-mono text-[11px] tracking-[0.12em] text-mute">CONTACT</div>

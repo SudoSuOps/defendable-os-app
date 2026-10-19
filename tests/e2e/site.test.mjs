@@ -135,7 +135,7 @@ describe('validator lab', () => {
 describe('flightsheet to receipt', () => {
   const dscr = () => sec('flightsheet').getByLabel('Claimed DSCR in the memo');
   const outcome = async () => (await sec('flightsheet').getByText(/^SYSTEM OUTCOME/).locator('xpath=following-sibling::span').innerText()).trim();
-  const rhash = async () => (await sec('receipt').getByText('RECEIPT_HASH · SHA-256').locator('xpath=following-sibling::div').innerText()).trim();
+  const rhash = async () => (await sec('receipt').locator('div.break-all.text-gold2').innerText()).trim();
 
   it('2.07 passes all three tests', async () => {
     await dscr().fill('2.07');
@@ -284,6 +284,92 @@ describe('reduced motion', () => {
     } finally {
       await m.browser.close();
       await srv2.close();
+    }
+  });
+});
+
+describe('section navigation (scrollspy)', () => {
+  const link = (name) => env.page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name });
+  it('marks the section under the reading line with aria-current and clears it on the hero', async () => {
+    await env.page.evaluate(() => document.getElementById('validator').scrollIntoView({ behavior: 'instant' }));
+    await env.page.waitForTimeout(500);
+    assert.equal(await link('VALIDATOR').getAttribute('aria-current'), 'location');
+    assert.equal(await link('ENGINE').getAttribute('aria-current'), null);
+    await env.page.evaluate(() => document.getElementById('receipt').scrollIntoView({ behavior: 'instant' }));
+    await env.page.waitForTimeout(500);
+    assert.equal(await link('RECEIPT').getAttribute('aria-current'), 'location');
+    await env.page.evaluate(() => window.scrollTo(0, 0));
+    await env.page.waitForTimeout(500);
+    assert.equal(await env.page.locator('nav[aria-label="Primary"] a[aria-current]').count(), 0);
+  });
+  it('clicking a nav link lands on that section', async () => {
+    await link('FLIGHTSHEET').click();
+    // smooth scrolling: wait until the section stops moving
+    let prev = null;
+    for (let i = 0; i < 40; i++) {
+      await env.page.waitForTimeout(150);
+      const t = await env.page.evaluate(() => Math.round(document.getElementById('flightsheet').getBoundingClientRect().top));
+      if (t === prev) break;
+      prev = t;
+    }
+    const top = prev;
+    assert.ok(top >= -2 && top <= 90, `section top at ${top}px`);
+  });
+});
+
+describe('FAQ', () => {
+  it('opens the first answer by default and toggles others, all answers present in the DOM', async () => {
+    const items = env.page.locator('#faq details');
+    assert.equal(await items.count(), 10);
+    assert.equal(await items.nth(0).getAttribute('open'), '');
+    assert.equal(await items.nth(1).getAttribute('open'), null);
+    await items.nth(1).locator('summary').click();
+    assert.equal(await items.nth(1).getAttribute('open'), '');
+    assert.match(await items.nth(1).innerText(), /REVIEW REQUIRED/);
+    // a closed answer is still in the DOM text, so crawlers and screen-reader search see it
+    assert.match(await env.page.locator('#faq').evaluate((e) => e.textContent), /not a cryptographic signature/);
+  });
+});
+
+describe('copy receipt hash', () => {
+  it('copies the exact receipt hash and confirms it', async () => {
+    const m = await launch();
+    const s = await serve('out');
+    try {
+      await m.ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: s.base });
+      await m.page.goto(s.base, { waitUntil: 'networkidle' });
+      const hash = (await m.page.locator('#receipt').getByText('RECEIPT_HASH · SHA-256').locator('xpath=ancestor::div[2]').locator('div.break-all').innerText()).trim();
+      await m.page.locator('#receipt').getByRole('button', { name: 'Copy hash' }).click();
+      assert.match(await m.page.locator('#receipt').getByText('Copied').innerText(), /Copied/);
+      assert.equal(await m.page.evaluate(() => navigator.clipboard.readText()), hash);
+    } finally {
+      await m.browser.close();
+      await s.close();
+    }
+  });
+});
+
+describe('Content-Security-Policy is enforced, not just declared', () => {
+  it('blocks an injected inline script, and the policy forbids unsafe-inline for scripts', async () => {
+    const m = await launch();
+    const s = await serve('out');
+    try {
+      m.page.on('console', () => {});
+      const violations = [];
+      m.page.on('console', (msg) => msg.text().includes('Content Security Policy') && violations.push(msg.text()));
+      await m.page.goto(s.base, { waitUntil: 'networkidle' });
+      const ran = await m.page.evaluate(() => {
+        const el = document.createElement('script');
+        el.textContent = 'window.__injected = true';
+        document.head.appendChild(el);
+        return window.__injected === true;
+      });
+      assert.equal(ran, false, 'injected inline script executed: CSP is not blocking it');
+      await m.page.waitForTimeout(200);
+      assert.ok(violations.some((v) => /inline script/i.test(v)), `no CSP violation reported: ${violations.join(' | ')}`);
+    } finally {
+      await m.browser.close();
+      await s.close();
     }
   });
 });
