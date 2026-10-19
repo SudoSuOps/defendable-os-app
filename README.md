@@ -78,6 +78,12 @@ These affect search and AI visibility and cannot be set from the code:
 6. **Web Analytics is on** (Pages injects its beacon), so the CSP allows `static.cloudflareinsights.com` for scripts and `cloudflareinsights.com` for connections, and nothing else third-party. Use its Core Web Vitals report to guide the mobile-performance work. If you turn Web Analytics off, remove those two origins in `scripts/postbuild.mjs`.
 7. **Email obfuscation guard.** The page is wrapped in `<!--email_off-->` markers because Cloudflare mistook `dv-validator@1.4.0` and `lease-record@2.1` for email addresses and rewrote visible text. That makes the page correct whatever the dashboard setting is, but you can still turn Scrape Shield's obfuscation off.
 
+## Brand assets
+
+Installed from the DefendableOS Brand Kit v1.0 (the kit's own "Website install" steps): the SVG favicon (`src/app/icon.svg`, the small mark without the claw), `favicon.ico` built from the kit's 16/32/48 PNGs, the 192 icon, the 180 Apple touch icon, the manifest icons (`public/brand/icon-192.png`, `icon-512.png`), and the 1200x630 share card `public/brand/og-default.png` (used by Open Graph, Twitter and the JSON-LD). `public/brand/email-mark-64.png` is published for email signatures. Colors and type in the kit match the site's tokens.
+
+Not installed on the site, on purpose: the kit's print proofs, the X avatar/header, the 1024 app-store icon and the brand book page. The flat clawed shield is **pending founder approval** per the kit's own README, so the site keeps using the rendered shield.
+
 ## Deploy (Cloudflare Pages)
 
 | Setting | Value |
