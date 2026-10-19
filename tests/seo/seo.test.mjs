@@ -201,6 +201,8 @@ describe('security headers (as served by Cloudflare Pages)', () => {
     const csp = all.match(/Content-Security-Policy: (.+)/)[1];
     const script = csp.match(/script-src ([^;]+)/)[1];
     assert.ok(!/unsafe-inline|unsafe-eval|\*/.test(script), script);
+    const origins = script.split(/\s+/).filter((t) => t.startsWith('http'));
+    assert.deepEqual(origins, ['https://static.cloudflareinsights.com'], 'only the Cloudflare analytics origin may be allowed for scripts');
     assert.match(csp, /frame-ancestors 'none'/);
     assert.match(csp, /object-src 'none'/);
     assert.match(csp, /base-uri 'self'/);

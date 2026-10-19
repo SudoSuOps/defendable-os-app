@@ -71,11 +71,12 @@ The e2e suite runs the browser **under the enforced CSP** and asserts that an in
 These affect search and AI visibility and cannot be set from the code:
 
 1. **Redirect `www` to the apex.** `www.defendableos.com` currently serves the same page with a 200. The canonical tag consolidates it, but a 301 Redirect Rule (`www.defendableos.com/*` to `https://defendableos.com/$1`) is the clean fix.
-2. **Turn off Email Address Obfuscation** (Scrape Shield). It rewrites `build@defendableos.com` in the HTML into a `cdn-cgi/l/email-protection` link, so crawlers and AI engines cannot read the contact address.
+2. **Optionally turn off Email Address Obfuscation** (Scrape Shield). The page is already protected with `email_off` markers (see item 7), so this is belt and braces, but it also stops Cloudflare injecting its decode script.
 3. **Check AI-crawler settings** (AI Crawl Control, "Block AI bots", managed `robots.txt`). If any is on, it overrides the allow rules in `robots.txt`.
 4. **Verify the site** in Google Search Console and Bing Webmaster Tools and submit `https://defendableos.com/sitemap.xml`. Bing also feeds several AI search products.
 5. **HSTS** is set for one year without `includeSubDomains` or `preload`. Add those only after every `*.defendableos.com` host serves HTTPS.
-6. If Cloudflare Web Analytics is enabled, add `static.cloudflareinsights.com` to `script-src` and `cloudflareinsights.com` to `connect-src` in `scripts/postbuild.mjs`.
+6. **Web Analytics is on** (Pages injects its beacon), so the CSP allows `static.cloudflareinsights.com` for scripts and `cloudflareinsights.com` for connections, and nothing else third-party. Use its Core Web Vitals report to guide the mobile-performance work. If you turn Web Analytics off, remove those two origins in `scripts/postbuild.mjs`.
+7. **Email obfuscation guard.** The page is wrapped in `<!--email_off-->` markers because Cloudflare mistook `dv-validator@1.4.0` and `lease-record@2.1` for email addresses and rewrote visible text. That makes the page correct whatever the dashboard setting is, but you can still turn Scrape Shield's obfuscation off.
 
 ## Deploy (Cloudflare Pages)
 

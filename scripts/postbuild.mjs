@@ -31,11 +31,12 @@ for (const f of await htmlFiles(OUT)) {
 
 const csp = [
   "default-src 'self'",
-  `script-src 'self' ${[...hashes].sort().join(' ')}`,
+  // Cloudflare Pages injects its Web Analytics beacon (cookieless, real-user Core Web Vitals) into every page; allow that one origin, nothing wider.
+  `script-src 'self' ${[...hashes].sort().join(' ')} https://static.cloudflareinsights.com`,
   "style-src 'self' 'unsafe-inline'", // React emits inline style attributes (SVG, CSS variables); scripts are the real attack surface
   "img-src 'self' data: blob:",
   "font-src 'self'",
-  "connect-src 'self'",
+  "connect-src 'self' https://cloudflareinsights.com",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
   "object-src 'none'",
